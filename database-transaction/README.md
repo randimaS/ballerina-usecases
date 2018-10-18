@@ -9,7 +9,7 @@
 ballerina run ReservationDBService.bal 
 
 ```
-3. Invoke the API with following URL and payload
+4. Invoke the API with POST request using following URL and payload
 
 ```
 http://localhost:9090/reservationcrud/add
