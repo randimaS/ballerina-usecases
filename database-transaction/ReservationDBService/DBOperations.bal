@@ -2,7 +2,6 @@ import ballerina/io;
 import ballerina/mysql;
 import ballerina/jdbc;
 import ballerina/log;
-import ballerina/time;
 import ballerina/config;
 
 endpoint jdbc:Client reservationDB {
@@ -13,23 +12,24 @@ endpoint jdbc:Client reservationDB {
     dbOptions: { useSSL: false }
 };
 
-public function InsertOperation(string tableName, string customerID, string customerName, string customerAddress, string startDate, string endDate, string package, float fullAmount, float advanceAmount) returns (int){
+public function InsertOperation(Reservation reservation) returns (int){
 
-    string sqlQuery = "INSERT INTO "+ tableName + "(CustomerID,CustomerName,CustomerAddress,StartDate,EndDate,Package,FullAmount,AdvanceAmount) VALUES(?,?,?,?,?,?,?,?);";
+    string sanatizedTableName = Sanitize(reservation.hotel);
+    string sqlQuery = "INSERT INTO "+ sanatizedTableName + "(CustomerID,CustomerName,CustomerAddress,StartDate,EndDate,Package,FullAmount,AdvanceAmount) VALUES(?,?,?,?,?,?,?,?);";
 
     int insertStatus = 0;
 
     transaction with retries = 4, oncommit = onCommitFunction,
                      onabort = onAbortFunction {
-        var resultStatus = reservationDB->update(sqlQuery,customerID,customerName,customerAddress,startDate,endDate,package,fullAmount,advanceAmount);
+        var resultStatus = reservationDB->update(sqlQuery,reservation.customerID,reservation.customerName,reservation.customerAddress,reservation.startDate,reservation.endDate,reservation.package,reservation.fullAmount,reservation.advanceAmount);
 
         match resultStatus {
             int resultInt => {
-                log:printInfo("Insert Sucessful for customerID : "+customerID);
+                log:printInfo("Insert Sucessful for customerID : "+reservation.customerID);
                 insertStatus = resultInt;
             }
             error e => {
-                log:printError("Insert failed for customerID : "+customerID + " Error : "+e.message);
+                log:printError("Insert failed for customerID : "+reservation.customerID + " Error : "+e.message);
                 insertStatus =  0;
                 abort;
             }

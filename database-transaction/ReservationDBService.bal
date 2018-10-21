@@ -15,22 +15,24 @@ service<http:Service> reservationDB bind { port: 9090 } {
         http:Response res = new;
         json insertStatusJson = {};
 
+        ReservationDBService:Reservation reservation;
+
         var payload = req.getJsonPayload();
 
         match payload {
             json jsonPayload => {
 
-                string hotelName =   ReservationDBService:Sanitize(check <string>jsonPayload.hotelName);
-                string customerId = check <string>jsonPayload.customerId;
-                string customerName = check <string>jsonPayload.customerName;
-                string customerAddr = check <string>jsonPayload.customerAddr;
-                string checkIn = check <string>jsonPayload.checkIn;
-                string checkOut =  check <string>jsonPayload.checkOut;
-                string package = check <string>jsonPayload.package;
-                float fullAmount = check <float>jsonPayload.fullAmount;
-                float advanceAmount =  check <float>jsonPayload.advanceAmount;
-
-                int dbResponseInt  = ReservationDBService:InsertOperation(hotelName,customerId,customerName,customerAddr,checkIn,checkOut,package,fullAmount,advanceAmount);
+                reservation.hotel =   check <string>jsonPayload.hotelName;
+                reservation.customerID = check <string>jsonPayload.customerId;
+                reservation.customerName = check <string>jsonPayload.customerName;
+                reservation.customerAddress = check <string>jsonPayload.customerAddr;
+                reservation.startDate = check <string>jsonPayload.checkIn;
+                reservation.endDate =  check <string>jsonPayload.checkOut;
+                reservation.package = check <string>jsonPayload.package;
+                reservation.fullAmount = check <float>jsonPayload.fullAmount;
+                reservation.advanceAmount =  check <float>jsonPayload.advanceAmount;
+                
+                int dbResponseInt  = ReservationDBService:InsertOperation(reservation);
 
                 if(dbResponseInt == 1){
                     res.statusCode = 200;
